@@ -11,17 +11,21 @@ import history from './history.js';
 // # - the textbox is where you can display the response
 // # 3. Create another REST API endpoint that will fetch a result from any public API and save the response as a file.
 
-
+// Page1 is allowed to progress to Page2
 function Page1() {
     const [authorization, setAuthorization] = useState('');
 
+    // Sends a request with headers and the "Authorization" parameter
+    // If Authorization == Authorized, then allow access to Page2
+    // Otherwise, display unauthorized message in textbox
     function handleClick() {
         fetch('/checkAuth', {headers: {'Authorization': 'Authorized'}})
             .then(response => response.json())
             .then(data => {
-                setAuthorization(data.authorization);
-                if (data.authorization === 'Passed') {
+                if (data === true) {
                     history.push('/Page2');
+                } else {
+                    setAuthorization('You are not authorized')
                 }
             });
     };

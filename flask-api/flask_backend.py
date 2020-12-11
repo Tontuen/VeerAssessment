@@ -1,12 +1,3 @@
-# 1. Create a REST API endpoint (preferably using a Python backend, but can be Node as well) that will look for some
-# parameter in the header of the request and deny access if that parameter's value is incorrect or missing
-# (you can call the parameter whatever you like)
-# 2. Create a React app that will have two pages, each with a button and a textbox:
-# - switching between pages should not reload the browser (i.e. a single-page application)
-# - the buttons should send a request with and without the required header to the endpoint above
-# - the textbox is where you can display the response
-# 3. Create another REST API endpoint that will fetch a result from any public API and save the response as a file.
-
 import requests
 from flask import request
 from flask import Flask
@@ -18,24 +9,29 @@ app = Flask(__name__)
 @app.route('/checkAuth')
 def check_authorization():
     # Looks for the 'Authorization' header
-    # If found, returns a json message of whether or not the user is authorized to navigate between certain pages
+    # If found, returns a boolean which determines whether or not the user is authorized to navigate between pages
     try:
         auth = request.headers['Authorization']
         if auth == 'Authorized':
-            return {'authorization': 'Passed'}
+            return json.dumps(True)
         else:
-            return {'authorization': 'You are not authorized'}
+            return json.dumps(False)
     except:
-        return {'authorization': 'You are not authorized'}
+        return json.dumps(False)
 
 
-@app.route('/totoro')
-def getTotoroData():
-    response = requests.get('https://ghibliapi.herokuapp.com/films/58611129-2dbc-4a81-a72f-77ddfc1b1b49').json()
+# 3. Create another REST API endpoint that will fetch a result from any public API and save the response as a file.
+@app.route('/saveResponse')
+def saveAPIResponse():
+    try:
+        api_url = request.args['url']
+        path = request.args['path'] + '/'
+    except KeyError:
+        return 'You need a "url" and "path" parameter.'
+    response = requests.get(api_url).json()
 
-    # Change file location to wherever you want to save it
-    # Currently saved to the flask-api directory
-    with open('Totoro.json', 'w') as outfile:
+    # Save the API response to 'apiresponse.json' in the path given
+    with open(path + 'apiresponse.json', 'w') as outfile:
         json.dump(response, outfile)
 
-    return 'Data Saved to Totoro.json'
+    return 'Data Saved to ' + path + 'apiresponse.json'
